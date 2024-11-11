@@ -7,6 +7,14 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
 #include "pico_csp.h"
+#include <zephyr/device.h>
+#include <zephyr/devicetree.h>
+#include <zephyr/drivers/sensor.h>
+
+#include <zephyr/logging/log.h>
+LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
+
+const struct device *const temp_sensor = DEVICE_DT_GET_ANY(lm75);
 
 int main(void)
 {
@@ -21,6 +29,11 @@ int main(void)
 	if (ret < 0) {
 		return 0;
 	}
+
+        if (!device_is_ready(temp_sensor)) {
+        	LOG_ERR("Temperature sensor not found or not ready!");
+        	return 0;
+        }
 
 	csp_server_start();
 

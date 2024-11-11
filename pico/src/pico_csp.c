@@ -6,8 +6,10 @@
 
 #include <stdlib.h>
 #include <zephyr/kernel.h>
-#include <csp/csp.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/sensor.h>
 #include <csp/drivers/usart.h>
+#include "pico_csp.h"
 
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(csp, CONFIG_MAIN_LOG_LEVEL);
@@ -27,6 +29,8 @@ LOG_MODULE_REGISTER(csp, CONFIG_MAIN_LOG_LEVEL);
 extern csp_conf_t csp_conf;
 
 static void server(void);
+/* get sensor device */
+extern const struct device *const temp_sensor;
 
 static void *router_task(void *param)
 {
@@ -74,6 +78,12 @@ static void server(void)
 
 	csp_listen(&sock, 10);
 
+	if (!device_is_ready(temp_sensor)) {
+		LOG_ERR("Temperature sensor not ready");
+		return;
+	} else {
+		LOG_INF("Temperature sensor ready");
+	}
 	while (true) {
 		if ((conn = csp_accept(&sock, 10000)) == NULL) {
 			continue;
@@ -82,6 +92,11 @@ static void server(void)
 		csp_packet_t *packet;
 		while ((packet = csp_read(conn, 50)) != NULL) {
 			switch (csp_conn_dport(conn)) {
+			case PORT_T:
+				get_temp(conn);
+				csp_buffer_free(packet);
+				break;
+
 			default:
 				csp_service_handler(packet);
 				break;
