@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include <zephyr/kernel.h>
+#include <csp/csp.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/sensor.h>
 #include <csp/drivers/usart.h>
@@ -25,6 +26,8 @@ LOG_MODULE_REGISTER(csp, CONFIG_MAIN_LOG_LEVEL);
 #define PICO_UART0_STOPBITS (1U)
 #define PICO_UART0_PARITY   (0U)
 #define PICO_CSP_ADDR       (26U)
+
+#define PORT_T (11U) /* for get temperature */
 
 extern csp_conf_t csp_conf;
 
