@@ -4,13 +4,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include "pico_csp.h"
+
 #include <stdlib.h>
 #include <zephyr/kernel.h>
 #include <csp/csp.h>
-#include <zephyr/device.h>
-#include <zephyr/drivers/sensor.h>
 #include <csp/drivers/usart.h>
-#include "pico_csp.h"
+#include "temp.h"
 
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(csp, CONFIG_MAIN_LOG_LEVEL);
@@ -32,8 +32,6 @@ LOG_MODULE_REGISTER(csp, CONFIG_MAIN_LOG_LEVEL);
 extern csp_conf_t csp_conf;
 
 static void server(void);
-/* get sensor device */
-extern const struct device *const temp_sensor;
 
 static void *router_task(void *param)
 {
@@ -81,12 +79,6 @@ static void server(void)
 
 	csp_listen(&sock, 10);
 
-	if (!device_is_ready(temp_sensor)) {
-		LOG_ERR("Temperature sensor not ready");
-		return;
-	} else {
-		LOG_INF("Temperature sensor ready");
-	}
 	while (true) {
 		if ((conn = csp_accept(&sock, 10000)) == NULL) {
 			continue;
